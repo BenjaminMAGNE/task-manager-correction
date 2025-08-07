@@ -1,9 +1,14 @@
+# Fichiers Python compilés
 __pycache__/
 *.pyc
+
+# Couverture de code
+.coverage
+
+# Fichier temporaire de données
+tasks.json
+
+# Documentation générée par Sphinx
 docs/build/
 docs/make.bat
 docs/Makefile
-
-__pycache__/
-.coverage
-tasks.json
