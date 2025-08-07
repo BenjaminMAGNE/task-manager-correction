@@ -1,4 +1,4 @@
-name: Tests & Lint
+name: CI - Tests & Lint  # ← modifie le nom du workflow
 
 on: [push, pull_request]
 
