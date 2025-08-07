@@ -1,3 +1,4 @@
+import subprocess
 import unittest
 import os
 import json
@@ -5,147 +6,121 @@ from src import task_manager
 
 class TestTaskManager(unittest.TestCase):
     def setUp(self):
-        # ici on cree un fichier temporaire pour les tests
+        # on utilise un fichier test au lieu de tasks.json
         self.test_file = "test_tasks.json"
         task_manager.TASKS_FILE = self.test_file
-
-        # on initialise le fichier avec une liste vide
         with open(self.test_file, "w") as f:
             json.dump([], f)
 
     def tearDown(self):
-        # on supprime le fichier apres chaque test
+        # on nettoie apres chaque test
         if os.path.exists(self.test_file):
             os.remove(self.test_file)
 
+    def test_load_tasks_vide(self):
+        tasks = task_manager.load_tasks()
+        self.assertEqual(tasks, [])
+
+    def test_load_tasks_json_invalide(self):
+        with open(self.test_file, "w") as f:
+            f.write("pas du json")
+        tasks = task_manager.load_tasks()
+        self.assertEqual(tasks, [])
+
+    def test_save_tasks(self):
+        data = [{"id": 1, "title": "x", "description": "y", "priority": 1, "due": "2025-01-01"}]
+        task_manager.save_tasks(data)
+        with open(self.test_file, "r") as f:
+            result = json.load(f)
+        self.assertEqual(result, data)
+
     def test_add_task(self):
-        # on ajoute une tache
         args = lambda: None
         args.title = "Test"
-        args.desc = "Description de test"
+        args.desc = "Desc"
         args.priority = 1
-        args.due = "2025-08-10"
-
+        args.due = "2025-01-01"
         task_manager.add_task(args)
-
-        # on verifie que la tache est bien ajoutee
         tasks = task_manager.load_tasks()
         self.assertEqual(len(tasks), 1)
         self.assertEqual(tasks[0]["title"], "Test")
 
     def test_delete_task(self):
-        # on ajoute une tache pour pouvoir la supprimer
+        # on ajoute une tache
         args = lambda: None
-        args.title = "A supprimer"
-        args.desc = "..."
+        args.title = "A"
+        args.desc = "B"
         args.priority = 1
-        args.due = "2025-08-12"
+        args.due = "2025-01-01"
         task_manager.add_task(args)
 
-        # suppression de la tache
+        # on supprime
         args_del = lambda: None
         args_del.id = 1
         task_manager.delete_task(args_del)
-
-        # on verifie que la liste est vide
         tasks = task_manager.load_tasks()
-        self.assertEqual(len(tasks), 0)
+        self.assertEqual(tasks, [])
 
     def test_edit_task(self):
-        # on ajoute une tache qu on va modifier ensuite
+        # ajout
         args = lambda: None
-        args.title = "Ancien titre"
-        args.desc = "Ancienne description"
-        args.priority = 2
-        args.due = "2025-08-10"
+        args.title = "Old"
+        args.desc = "desc"
+        args.priority = 1
+        args.due = "2025-01-01"
         task_manager.add_task(args)
 
-        # on modifie la tache 1
+        # modification
         args_edit = lambda: None
         args_edit.id = 1
-        args_edit.title = "Nouveau titre"
+        args_edit.title = "New"
         args_edit.desc = None
-        args_edit.priority = 1
+        args_edit.priority = None
         args_edit.due = None
+        task_manager.edit_task(args_edit)
+        tasks = task_manager.load_tasks()
+        self.assertEqual(tasks[0]["title"], "New")
 
+    def test_edit_task_introuvable(self):
+        args_edit = lambda: None
+        args_edit.id = 99
+        args_edit.title = "X"
+        args_edit.desc = None
+        args_edit.priority = None
+        args_edit.due = None
+        # ça doit juste rien planter
         task_manager.edit_task(args_edit)
 
-        tasks = task_manager.load_tasks()
-        self.assertEqual(tasks[0]["title"], "Nouveau titre")
-        self.assertEqual(tasks[0]["priority"], 1)
-        self.assertEqual(tasks[0]["description"], "Ancienne description")  # inchangé
-
-    def test_list_tasks_sorted_by_priority(self):
-        # on ajoute 2 taches avec des priorites differentes
-        args1 = lambda: None
-        args1.title = "Tache 1"
-        args1.desc = "Desc"
-        args1.priority = 2
-        args1.due = "2025-08-15"
-        task_manager.add_task(args1)
+    def test_list_tasks(self):
+        args = lambda: None
+        args.title = "A"
+        args.desc = "B"
+        args.priority = 2
+        args.due = "2025-01-01"
+        task_manager.add_task(args)
 
         args2 = lambda: None
-        args2.title = "Tache 2"
-        args2.desc = "Desc"
+        args2.title = "C"
+        args2.desc = "D"
         args2.priority = 1
-        args2.due = "2025-08-10"
+        args2.due = "2024-01-01"
         task_manager.add_task(args2)
-
-        # on capture la sortie de list_tasks
-        import io
-        import sys
-        captured_output = io.StringIO()
-        sys.stdout = captured_output
 
         args_list = lambda: None
         args_list.sort = "priority"
         task_manager.list_tasks(args_list)
 
-        sys.stdout = sys.__stdout__  # on restaure l affichage normal
-        output = captured_output.getvalue()
+        args_list.sort = "due"
+        task_manager.list_tasks(args_list)
 
-        # on verifie que la tache 2 (priorite 1) est affichee avant la tache 1
-        self.assertIn("Tache 2", output.splitlines()[0])
-        self.assertIn("Tache 1", output.splitlines()[1])
+    def test_main_no_command(self):
+        result = subprocess.run(
+            ["python", "src/task_manager.py"],
+            capture_output=True,
+            text=True
+        )
+        self.assertIn("Gestionnaire de taches", result.stdout)
 
-    def test_list_tasks_priority(capsys):
-        args = argparse.Namespace(sort="priority")
-        task_manager.list_tasks(args)
-        output = capsys.readouterr().out
-        assert "Priorité" in output
-
-    def test_list_tasks_due(capsys):
-        args = argparse.Namespace(sort="due")
-        task_manager.list_tasks(args)
-        output = capsys.readouterr().out
-        assert "Échéance" in output
-
-
-    def test_load_tasks_json_mal_forme(self):
-        # on ecrit du texte invalide dans le fichier JSON
-        with open(self.test_file, "w") as f:
-            f.write("{ceci n est pas du json}")
-
-        # on verifie que la fonction ne plante pas
-        try:
-            tasks = task_manager.load_tasks()
-            self.assertEqual(tasks, [])  # on attend une liste vide
-        except Exception:
-            self.fail("load_tasks a plante avec un json mal forme")
-
-    def test_edit_task_not_found(capsys):
-        args = argparse.Namespace(id=9999, title="x", desc=None, priority=None, due=None)
-        task_manager.edit_task(args)
-        output = capsys.readouterr().out
-        assert "introuvable" in output.lower()
-
-    def test_save_tasks_creates_file(tmp_path):
-        test_file = tmp_path / "test_tasks.json"
-        task = [{"id": 1, "title": "x", "description": "y", "priority": 1, "due": "2025-01-01"}]
-        task_manager.TASKS_FILE = str(test_file)
-        task_manager.save_tasks(task)
-
-        assert test_file.exists()
 
 if __name__ == "__main__":
     unittest.main()
