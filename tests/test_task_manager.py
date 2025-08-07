@@ -75,6 +75,40 @@ class TestTaskManager(unittest.TestCase):
         self.assertEqual(tasks[0]["priority"], 1)
         self.assertEqual(tasks[0]["description"], "Ancienne description")  # inchangé
 
+    def test_list_tasks_sorted_by_priority(self):
+        # on ajoute 2 taches avec des priorites differentes
+        args1 = lambda: None
+        args1.title = "Tache 1"
+        args1.desc = "Desc"
+        args1.priority = 2
+        args1.due = "2025-08-15"
+        task_manager.add_task(args1)
+
+        args2 = lambda: None
+        args2.title = "Tache 2"
+        args2.desc = "Desc"
+        args2.priority = 1
+        args2.due = "2025-08-10"
+        task_manager.add_task(args2)
+
+        # on capture la sortie de list_tasks
+        import io
+        import sys
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+
+        args_list = lambda: None
+        args_list.sort = "priority"
+        task_manager.list_tasks(args_list)
+
+        sys.stdout = sys.__stdout__  # on restaure l affichage normal
+        output = captured_output.getvalue()
+
+        # on verifie que la tache 2 (priorite 1) est affichee avant la tache 1
+        self.assertIn("Tache 2", output.splitlines()[0])
+        self.assertIn("Tache 1", output.splitlines()[1])
+
+
 
 if __name__ == "__main__":
     unittest.main()
