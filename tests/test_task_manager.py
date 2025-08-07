@@ -108,6 +108,17 @@ class TestTaskManager(unittest.TestCase):
         self.assertIn("Tache 2", output.splitlines()[0])
         self.assertIn("Tache 1", output.splitlines()[1])
 
+    def test_load_tasks_json_mal_forme(self):
+        # on ecrit du texte invalide dans le fichier JSON
+        with open(self.test_file, "w") as f:
+            f.write("{ceci n est pas du json}")
+
+        # on verifie que la fonction ne plante pas
+        try:
+            tasks = task_manager.load_tasks()
+            self.assertEqual(tasks, [])  # on attend une liste vide
+        except Exception:
+            self.fail("load_tasks a plante avec un json mal forme")
 
 
 if __name__ == "__main__":
