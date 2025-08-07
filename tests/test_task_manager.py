@@ -1,5 +1,7 @@
 import subprocess
 import unittest
+from unittest import TestCase
+from unittest.mock import patch
 import os
 import json
 from src import task_manager
@@ -121,6 +123,10 @@ class TestTaskManager(unittest.TestCase):
         )
         self.assertIn("Gestionnaire de taches", result.stdout)
 
+class TestMain(TestCase):
+    def test_main_add(self):
+        with patch("sys.argv", ["task_manager.py", "add", "--title", "x", "--desc", "y", "--priority", "1", "--due", "2025-01-01"]):
+            task_manager.main()
 
 if __name__ == "__main__":
     unittest.main()
