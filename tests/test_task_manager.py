@@ -108,6 +108,19 @@ class TestTaskManager(unittest.TestCase):
         self.assertIn("Tache 2", output.splitlines()[0])
         self.assertIn("Tache 1", output.splitlines()[1])
 
+    def test_list_tasks_priority(capsys):
+        args = argparse.Namespace(sort="priority")
+        task_manager.list_tasks(args)
+        output = capsys.readouterr().out
+        assert "Priorité" in output
+
+    def test_list_tasks_due(capsys):
+        args = argparse.Namespace(sort="due")
+        task_manager.list_tasks(args)
+        output = capsys.readouterr().out
+        assert "Échéance" in output
+
+
     def test_load_tasks_json_mal_forme(self):
         # on ecrit du texte invalide dans le fichier JSON
         with open(self.test_file, "w") as f:
@@ -120,6 +133,19 @@ class TestTaskManager(unittest.TestCase):
         except Exception:
             self.fail("load_tasks a plante avec un json mal forme")
 
+    def test_edit_task_not_found(capsys):
+    args = argparse.Namespace(id=9999, title="x", desc=None, priority=None, due=None)
+    task_manager.edit_task(args)
+    output = capsys.readouterr().out
+    assert "introuvable" in output.lower()
+
+    def test_save_tasks_creates_file(tmp_path):
+    test_file = tmp_path / "test_tasks.json"
+    task = [{"id": 1, "title": "x", "description": "y", "priority": 1, "due": "2025-01-01"}]
+    task_manager.TASKS_FILE = str(test_file)
+    task_manager.save_tasks(task)
+
+    assert test_file.exists()
 
 if __name__ == "__main__":
     unittest.main()
