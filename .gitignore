@@ -4,3 +4,6 @@ docs/build/
 docs/make.bat
 docs/Makefile
 
+__pycache__/
+.coverage
+tasks.json
