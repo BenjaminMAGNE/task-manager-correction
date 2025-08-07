@@ -51,5 +51,30 @@ class TestTaskManager(unittest.TestCase):
         tasks = task_manager.load_tasks()
         self.assertEqual(len(tasks), 0)
 
+    def test_edit_task(self):
+        # on ajoute une tache qu on va modifier ensuite
+        args = lambda: None
+        args.title = "Ancien titre"
+        args.desc = "Ancienne description"
+        args.priority = 2
+        args.due = "2025-08-10"
+        task_manager.add_task(args)
+
+        # on modifie la tache 1
+        args_edit = lambda: None
+        args_edit.id = 1
+        args_edit.title = "Nouveau titre"
+        args_edit.desc = None
+        args_edit.priority = 1
+        args_edit.due = None
+
+        task_manager.edit_task(args_edit)
+
+        tasks = task_manager.load_tasks()
+        self.assertEqual(tasks[0]["title"], "Nouveau titre")
+        self.assertEqual(tasks[0]["priority"], 1)
+        self.assertEqual(tasks[0]["description"], "Ancienne description")  # inchangé
+
+
 if __name__ == "__main__":
     unittest.main()
