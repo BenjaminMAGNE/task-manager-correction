@@ -1,7 +1,10 @@
+"""
+Module principal du gestionnaire de taches.
+Permet d ajouter, modifier, supprimer et lister les taches via argparse.
+"""
 import argparse
 import json
 import os
-from datetime import datetime
 
 # chemin du fichier de taches
 TASKS_FILE = "tasks.json"
