@@ -1,0 +1,23 @@
+[
+    {
+        "id": 1,
+        "title": "Exemple de benjouss modification",
+        "description": "Premier exemple de tache par Benjouss 2",
+        "priority": 3,
+        "due": "2025-08-12"
+    },
+    {
+        "id": 2,
+        "title": "Exemple Benji tr\u00e8s important",
+        "description": "Premier exemple de tache par Benjouss 3",
+        "priority": 1,
+        "due": "2025-09-01"
+    },
+    {
+        "id": 3,
+        "title": "Une bonne note svp",
+        "description": "S il vous plait monsieur Roussile ayez piti\u00e9",
+        "priority": 1,
+        "due": "2025-08-10"
+    }
+]
