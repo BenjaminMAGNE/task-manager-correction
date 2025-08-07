@@ -42,7 +42,7 @@ jobs:
         run: coverage html
 
       - name: Sauvegarder les artefacts (rapport HTML)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: htmlcov
