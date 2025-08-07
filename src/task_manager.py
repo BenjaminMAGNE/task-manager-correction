@@ -11,6 +11,8 @@ def load_tasks():
     if os.path.exists(TASKS_FILE):
         with open(TASKS_FILE, "r") as f:
             return json.load(f)
+	except json.JSONDecodeError:
+                return []
     return []
 
 # sauvegarder les tâches dans le fichier JSON
